@@ -8,6 +8,16 @@ const appInsights = require('applicationinsights');
 appInsights.setup("6c00c009-0873-41fb-936f-c63d64db84cb");
 appInsights.start();
 
+// set up rate limiter: maximum of five requests per minute
+const RateLimit = require('express-rate-limit');
+const limiter = new RateLimit({
+  windowMs: 1*60*1000, // 1 minute
+  max: 5
+});
+
+// apply rate limiter to all requests
+app.use(limiter);
+
 app.use(express.static(path.join(__dirname, 'dist/content-web')));
 const contentApiUrl = process.env.CONTENT_API_URL || "http://168.62.56.84:3001";
 
@@ -76,6 +86,9 @@ app.get('/api/stats', function (req, res) {
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist/content-web/index.html'));
 });
+
+
+
 const port = process.env.PORT || '3000';
 app.set('port', port);
 
